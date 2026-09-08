@@ -22,25 +22,26 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-        working-directory: 모이트-v3/back
+        working-directory: moit-v3/back
 
       - name: Build Spring Boot App
         run: ./gradlew clean build -x test
-        working-directory: 모이트-v3/back
+        working-directory: moit-v3/back
 
       - name: Find JAR file
-        run: echo "JAR_FILE=$(ls 모이트-v3/back/build/libs/*SNAPSHOT.jar | grep -v plain | head -n 1)" >> $GITHUB_ENV
+        run: echo "JAR_FILE=$(ls moit-v3/back/build/libs/*SNAPSHOT.jar | grep -v plain | head -n 1)" >> $GITHUB_ENV
 
       - name: Create Backend .env from Secrets
         run: |
-          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> 모이트-v3/back/.env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> 모이트-v3/back/.env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> 모이트-v3/back/.env
-          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> 모이트-v3/back/.env
-          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> 모이트-v3/back/.env
-          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> 모이트-v3/back/.env
-          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> 모이트-v3/back/.env
-          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> 모이트-v3/back/.env
+          echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> moit-v3/back/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> moit-v3/back/.env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> moit-v3/back/.env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> moit-v3/back/.env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> moit-v3/back/.env
+          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> moit-v3/back/.env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> moit-v3/back/.env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> moit-v3/back/.env
+          echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" >> moit-v3/back/.env
 
       - name: Ensure app directory exists on EC2
         uses: appleboy/ssh-action@v0.1.7
@@ -56,7 +57,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "모이트-v3/back/build/libs/back-0.0.1-SNAPSHOT.jar"
+          source: "moit-v3/back/build/libs/back-0.0.1-SNAPSHOT.jar"
           target: "/home/ubuntu/app"
 
       - name: Copy Backend .env to EC2
@@ -65,7 +66,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "모이트-v3/back/.env"
+          source: "moit-v3/back/.env"
           target: "/home/ubuntu/app"
 
       - name: Run Backend on EC2 with pm2
@@ -95,17 +96,17 @@ jobs:
 
       - name: Create Frontend .env.production
         run: |
-          echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" > 모이트-v3/front/.env.production
+          echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" > moit-v3/front/.env.production
 
       - name: Build Frontend
         run: |
           npm install
           npm run build -- --no-lint
-        working-directory: 모이트-v3/front
+        working-directory: moit-v3/front
 
       - name: Archive frontend build
         run: |
-          cd 모이트-v3/front
+          cd moit-v3/front
           tar -czf ../../frontend-build.tar.gz .next public package.json .env.production
 
       - name: Copy frontend archive to EC2
