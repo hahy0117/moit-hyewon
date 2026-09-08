@@ -101,6 +101,7 @@ jobs:
       - name: Build Frontend
         run: |
           npm install --legacy-peer-deps
+          npm install react-is --legacy-peer-deps
           npm run build -- --no-lint
         working-directory: moit-v3/front
 
