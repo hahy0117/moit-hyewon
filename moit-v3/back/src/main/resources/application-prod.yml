@@ -88,6 +88,6 @@ springdoc:
     swagger-ui:
         enabled: false
 app:
-  frontend-url: https://moit3.duckdns.orgcd
+  frontend-url: https://moit3.duckdns.org
 # server:
 #     port: 8081
