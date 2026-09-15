@@ -1,3 +1,4 @@
+
 name: Deploy Fullstack App
 
 on:
@@ -8,11 +9,10 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          submodules: false
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -28,9 +28,6 @@ jobs:
         run: ./gradlew clean build -x test
         working-directory: moit-v3/back
 
-      - name: Find JAR file
-        run: echo "JAR_FILE=$(ls moit-v3/back/build/libs/*SNAPSHOT.jar | grep -v plain | head -n 1)" >> $GITHUB_ENV
-
       - name: Create Backend .env from Secrets
         run: |
           echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> moit-v3/back/.env
@@ -43,13 +40,14 @@ jobs:
           echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> moit-v3/back/.env
           echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" >> moit-v3/back/.env
 
-      - name: Ensure app directory exists on EC2
+      - name: Ensure backend directory exists on EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: mkdir -p /home/ubuntu/app
+          script: |
+            mkdir -p /home/ubuntu/app/back/build/libs
 
       - name: Copy Backend JAR to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -57,8 +55,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "moit-v3/back/build/libs/back-0.0.1-SNAPSHOT.jar"
-          target: "/home/ubuntu/app"
+          source: "moit-v3/back/build/libs/*SNAPSHOT.jar"
+          target: "/home/ubuntu/app/back/build/libs"
 
       - name: Copy Backend .env to EC2
         uses: appleboy/scp-action@v0.1.7
@@ -67,7 +65,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "moit-v3/back/.env"
-          target: "/home/ubuntu/app"
+          target: "/home/ubuntu/app/back"
 
       - name: Run Backend on EC2 with pm2
         uses: appleboy/ssh-action@v0.1.7
@@ -79,15 +77,15 @@ jobs:
             cd /home/ubuntu/app/back/build/libs
             pm2 delete backend || true
             export $(cat /home/ubuntu/app/back/.env | xargs)
-            pm2 start java --name backend -- -jar back-0.0.1-SNAPSHOT.jar
+            JAR_FILE=$(ls *SNAPSHOT.jar | head -n 1)
+            pm2 start java --name backend -- -jar "$JAR_FILE"
 
   frontend:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          submodules: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -110,6 +108,15 @@ jobs:
           cd moit-v3/front
           tar -czf ../../frontend-build.tar.gz .next public package.json .env.production
 
+      - name: Ensure frontend directory exists on EC2
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/app/front
+
       - name: Copy frontend archive to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -119,14 +126,13 @@ jobs:
           source: "frontend-build.tar.gz"
           target: "/home/ubuntu/app/front"
 
-      - name: Extract archive on EC2
+      - name: Extract frontend build on EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            mkdir -p /home/ubuntu/app/front
             cd /home/ubuntu/app/front
             rm -rf .next public
             tar -xzf frontend-build.tar.gz
@@ -139,6 +145,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/app/front
-            npm install --production
+            npm install --production --legacy-peer-deps
             pm2 delete frontend || true
             pm2 start npm --name "frontend" -- run start
+

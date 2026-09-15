@@ -1,12 +1,18 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080",
-
-  // HttpOnly Cookie를 서버와 주고받기 위해 필요
+  // 환경변수가 없으면 절대주소 대신 Nginx가 프록시하는 상대 경로("/api")를 기본값으로 사용
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "",
   withCredentials: true,
 });
+
+// const api = axios.create({
+//   baseURL:
+//     process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080",
+
+//   // HttpOnly Cookie를 서버와 주고받기 위해 필요
+//   withCredentials: true,
+// });
 
 
 // =========================================================
@@ -181,12 +187,22 @@ api.interceptors.response.use(
       // HttpOnly Cookie이기 때문에 브라우저가
       // withCredentials: true를 통해 자동으로 전송한다.
       // ===================================================
-      const response =
-        await axios.post(
+      // const response =
+      //   await axios.post(
 
+      //     `${
+      //       process.env.NEXT_PUBLIC_API_BASE_URL ||
+      //       "http://localhost:8080"
+      //     }/api/members/refresh`,
+
+      //     {
+      //       deviceId: deviceId,
+      //     },
+            const response =
+              await axios.post(
           `${
             process.env.NEXT_PUBLIC_API_BASE_URL ||
-            "http://localhost:8080"
+            ""
           }/api/members/refresh`,
 
           {
