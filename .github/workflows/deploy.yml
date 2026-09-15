@@ -95,6 +95,9 @@ jobs:
       - name: Create Frontend .env.production
         run: |
           echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" > moit-v3/front/.env.production
+          echo "NEXT_PUBLIC_NAVER_MAP_CLIENT_ID=${{ secrets.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID }}" >> moit-v3/front/.env.production
+          echo "NEXT_PUBLIC_TOSS_CLIENT_KEY=${{ secrets.NEXT_PUBLIC_TOSS_CLIENT_KEY }}" >> moit-v3/front/.env.production
+          
 
       - name: Build Frontend
         run: |
