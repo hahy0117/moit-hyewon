@@ -145,7 +145,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/app/front
-            npm install --production --legacy-peer-deps
             pm2 delete frontend || true
             pm2 start npm --name "frontend" -- run start
 
