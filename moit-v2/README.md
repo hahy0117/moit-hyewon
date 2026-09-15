@@ -1,252 +1,128 @@
 # 🚀 MOIT (모잇)
 
+> **Meet + It = MOIT**  
+> 같은 관심사와 목표를 가진 사람들이 연결되어 함께 성장할 수 있도록 지원하는 목적형 커뮤니티 플랫폼입니다.
+
+---
+
 ## 📌 프로젝트 소개
 
-**MOIT(모잇)**는 스터디, 프로젝트, 운동, 취미 활동 등 **공통의 관심사와 목표를 가진 사람들이 모임을 만들고 참여할 수 있는 목적형 커뮤니티 플랫폼**입니다.
-
-1차 프로젝트에서는 기본적인 소모임 플랫폼을 구축하였으며, 2차 프로젝트에서는 **Spring Boot 기반으로 리팩토링하고 다양한 Open API와 AI 기능을 도입하여 서비스 품질과 사용자 경험을 고도화**하였습니다.
+**MOIT(모잇)**은 스터디, 프로젝트, 운동, 취미 활동 등 **공통의 관심사와 목표를 가진 사람들이 모임을 만들고 참여할 수 있는 목적형 커뮤니티 플랫폼**입니다.
 
 ---
 
-# 🎯 프로젝트 목표
+## 🎯 2차 고도화 기획 배경
 
-* 목적 기반 소모임 커뮤니티 서비스 구축
-* 안전하고 신뢰할 수 있는 모임 환경 제공
-* AI 및 Open API를 활용한 사용자 편의성 향상
-* 유지보수성과 확장성을 고려한 Spring Boot 기반 리팩토링 및 기능 고도화
+1차 프로젝트에서 목적형 소모임의 기본 기능을 구축한 후, 실제 운영 및 사용성 측면에서 다음과 같은 개선점을 정의하고 2차 고도화를 진행했습니다.
 
----
-
-# 📅 프로젝트 개요
-
-| 항목    | 내용                        |
-| ----- | ------------------------- |
-| 프로젝트명 | MOIT (모잇)                 |
-| 1차 개발 | 2026.06.16 ~ 2026.06.22   |
-| 2차 개발 | 2026.07.02 ~ 2026.07.14 |
-| 개발 형태 | 팀 프로젝트                    |
+- **기술적 확장성 및 보안 강화:** 기존 Spring Framework 구조의 한계를 극복하기 위해 **Spring Boot로 전환**하고, **Spring Security 및 OAuth2**를 적용하여 인증·인가 및 비밀번호 보안을 강화했습니다.
+- **사용자 편의성 향상 (AI 도입):** 모임 생성 시 제목·소개글 작성 부담을 줄이고, 정교한 참가자 신뢰도 평가를 위해 **OpenAI GPT API**를 도입했습니다.
+- **클린 커뮤니티 환경 조성:** 후기, 문의, 신고 등 커뮤니티 내 비속어 및 욕설을 **AI 기반으로 자동 필터링**하여 신뢰할 수 있는 환경을 마련했습니다.
+- **서비스 자동화 & 외부 연동:** 기상청·지도 API 연동과 **비동기 이벤트, Scheduler, SMTP 메일**을 활용해 사용자 알림 및 게시물 관리 자동화를 구현했습니다.
 
 ---
 
-# 🔄 리팩토링 및 기술 변경
+## 📅 프로젝트 개요
 
-### Framework
+| 항목           | 내용                    |
+| -------------- | ----------------------- |
+| **프로젝트명** | MOIT (모잇)             |
+| **개발 형태**  | 팀 프로젝트             |
+| **1차 개발**   | 2026.06.16 ~ 2026.06.22 |
+| **2차 개발**   | 2026.07.02 ~ 2026.07.14 |
 
-* Spring Framework → **Spring Boot**
+## 🎯 프로젝트 핵심 목표 & 고도화 포인트
 
-### Database
-
-* MySQL → **Oracle**
-
-### View
-
-* JSP → **Thymeleaf**
-
-### Security
-
-* Spring Security 적용
-* OAuth2 기반 소셜 로그인 추가
-* BCrypt 비밀번호 암호화 적용
+- **Spring Boot 리팩토링:** 기존 Spring Framework에서 전환하여 프로젝트 구조 개선, 유지보수성 및 확장성 확보
+- **인증 및 보안 강화:** Spring Security, OAuth2 소셜 로그인, BCrypt 암호화, HIBP API 기반 유출 검사
+- **AI 기반 지능형 기능 도입:** OpenAI GPT API를 연동하여 자동 생성, 신뢰도 평가, 비속어/욕설 필터링 구현
+- **Open API 연동 & 자동화:** 기상청, VWorld, 네이버 MAP API 활용 및 비동기 알림(`@Async`), 스케줄링(`@Scheduled`), SMTP 메일 발송 구현
 
 ---
 
-# ✨ 주요 기능
+## 🔄 기술 스택 전환 (1차 vs 2차)
 
-## 👤 회원
-
-### 1차
-
-* 회원가입
-* 로그인
-
-### 2차 고도화
-
-* OAuth2 기반 소셜 로그인
-* 관심사 태그 등록
-* BCrypt 비밀번호 암호화
-* HIBP(Have I Been Pwned) API를 활용한 비밀번호 유출 여부 검사
+| 영역            | 1차 개발         | 2차 개발 (고도화)                     |
+| --------------- | ---------------- | ------------------------------------- |
+| **Framework**   | Spring Framework | **Spring Boot**                       |
+| **Database**    | MySQL            | **Oracle**                            |
+| **View Engine** | JSP              | **Thymeleaf**                         |
+| **Security**    |                  | **Spring Security + OAuth2 + BCrypt** |
 
 ---
 
-## 🤝 모임
+## ✨ 주요 기능
 
-### 1차
+### 👤 회원
 
-* 모임 등록
-* 모임 조회
-* 수정 / 삭제
-* 모임 신청
+- OAuth2 기반 소셜 로그인 및 BCrypt 비밀번호 암호화
+- HIBP (Have I Been Pwned) API 기반 비밀번호 유출 여부 검사
+- 관심사 태그 기반 사용자 정보 관리
 
-### 2차 고도화
+### 🤝 모임
 
-* OpenAI GPT API를 활용한
+- **AI 기능:** OpenAI GPT API 기반 모임 제목·카테고리·소개글 자동 생성 및 참가자 신뢰도 평가
+- **날씨 & 지도:** 기상청 단기예보 API 기반 모임 날씨 알림, VWorld 주소 검색 및 네이버 MAP API 연동
+- **운영:** 좋아요, 끌어올리기, 모집/신청 상태 관리
 
-  * 모임 제목 자동 추천
-  * 카테고리 자동 추천
-  * 소개글 자동 작성
-* 참가자 신뢰도 AI 평가
-* 기상청 단기예보 API를 활용한 모임 날씨 알림
-* VWorld 주소 검색 API 기반 주소 검색
-* 네이버 MAP API를 활용한 지도 시각화
+### 📝 후기 & 📨 문의
 
----
+- OpenAI GPT API 기반 욕설·비방·비속어 필터링
+- OpenAI GPT API 기반 개설자 후기 분석
+- 비동기 이벤트 기반 문의 답변 알림
 
-## 📝 후기
+### 🚨 신고 & 📢 광고
 
-### 1차
-
-* 후기 작성
-* 조회
-* 수정
-* 삭제
-* 좋아요
-
-### 2차 고도화
-
-* OpenAI GPT API 기반 욕설 및 비방 필터링
-* OpenAI GPT API 기반 개설자 후기 분석 서비스
+- OpenAI GPT API 기반 신고 사유 문장 및 광고 콘텐츠 자동 생성
+- Scheduler 기반 광고 게시 상태 자동 관리
+- SMTP 기반 신고 결과 및 광고 종료 예약 메일 발송
 
 ---
 
-## 📨 문의
-
-### 1차 신규 기능
-* 문의 작성, 답변
-* 조회
-* 수정
-* 삭제
-
-### 2차 신규 기능
-
-* OpenAI GPT API 기반 문의 비속어 필터링
-* 답변 등록 시 비동기 이벤트 기반 알림 발송
-
----
-
-## 🚨 신고
-
-### 1차
-
-* 모집글 신고
-* 후기 신고
-* 관리자 신고 처리
-
-### 2차 고도화
-
-* OpenAI GPT API 기반 신고 사유 문장 생성
-* 중복 신고 방지
-* SMTP 기반 신고 처리 결과 메일 자동 발송
-
----
-
-## 📢 광고
-
-### 1차
-
-* 광고 등록
-* 수정
-* 삭제
-* 상태 관리
-
-### 2차 고도화
-
-* OpenAI GPT API 기반 광고 제목 및 내용 자동 생성
-* 광고 게시 상태 자동 관리 Scheduler
-* SMTP 기반 광고 종료 예약 메일 발송
-
----
-
-# 💡 프로젝트 특징
-
-* Spring Boot 기반 리팩토링을 통한 유지보수성 향상
-* Oracle 및 Thymeleaf 기반 서버 사이드 렌더링 적용
-* OAuth2 및 Spring Security를 활용한 보안 강화
-* OpenAI GPT API를 활용한 AI 추천 및 콘텐츠 생성
-* 기상청, VWorld, 네이버 MAP 등 다양한 Open API 연동
-* SMTP 및 비동기 이벤트를 활용한 사용자 알림 자동화
-* Scheduler를 통한 광고 상태 자동 관리
-* AI 기반 콘텐츠 필터링으로 안전한 커뮤니티 환경 제공
-
----
-
-# 🛠 기술 스택
+## 🛠 기술 스택 (Tech Stack)
 
 ### Front-End
 
-* HTML5
-* CSS3
-* JavaScript
-* Thymeleaf
+- HTML5, CSS3, JavaScript, Thymeleaf
 
 ### Back-End
 
-* Java
-* Spring Boot
-* Spring Security
-* OAuth2
-* MyBatis
+- Java 17+, Spring Boot, Spring Security, OAuth2, MyBatis, Spring Async & Scheduling
 
 ### Database
 
-* Oracle
+- Oracle
 
-### AI & Open API
+### AI & External APIs
 
-* OpenAI GPT API
-* Have I Been Pwned API
-* 기상청 단기예보 API
-* VWorld 주소 검색 API
-* 네이버 MAP API
-* SMTP Mail
+- OpenAI GPT API
+- Have I Been Pwned (HIBP) API
+- 기상청 단기예보 API
+- VWorld 주소 검색 API
+- 네이버 MAP API
+- JavaMailSender (SMTP)
 
 ### DevOps & Collaboration
 
-* Git
-* GitHub
-* Notion
+- Git, GitHub (GitHub Flow), Notion
 
 ---
 
-# 👥 Team
+## 👥 Team
 
-* GitHub Flow 기반 협업
-* Notion을 활용한 일정 및 업무 관리
-* 코드 리뷰를 통한 협업 진행
-
----
-
-# 🎥 프로젝트 시연
-
-* 회원가입 및 로그인
-
-  * https://www.youtube.com/watch?v=jCiTv0grZYE
-
-* 모임 등록 및 신청
-
-  * https://www.youtube.com/watch?v=WLSxFhWPIRs
-
-* 문의
-
-  * https://www.youtube.com/watch?v=eWmBrzBqTeU
-
-* 후기
-
-  * https://www.youtube.com/watch?v=vFFOV-ELUPY
-
-* 신고
-
-  * https://www.youtube.com/watch?v=BbsZr3dRHZ0
-
-* 광고
-
-  * https://www.youtube.com/watch?v=iv0MOgaqSUI
+- 팀 프로젝트 진행
+- **GitHub Flow** 기반 버전 관리 및 협업
+- **Notion**을 활용한 일정 및 업무 관리
 
 ---
 
-## 📢 MOIT
+## 🎥 프로젝트 시연 영상
 
-**Meet + It = MOIT**
-
-같은 관심사와 목표를 가진 사람들이 연결되어 함께 성장할 수 있도록 지원하는 목적형 커뮤니티 플랫폼입니다.
-
-1차 프로젝트에서 기본 기능을 구현한 후, 2차 프로젝트에서는 **Spring Boot 리팩토링과 AI(OpenAI GPT API), OAuth2, 기상청 API, VWorld API, 네이버 MAP API 등 다양한 Open API를 적용하여 서비스의 완성도와 사용자 경험을 크게 향상**시켰습니다.
+| 기능               | 링크                                                            |
+| ------------------ | --------------------------------------------------------------- |
+| 회원가입 및 로그인 | [YouTube에서 보기](https://www.youtube.com/watch?v=jCiTv0grZYE) |
+| 모임 등록 및 신청  | [YouTube에서 보기](https://www.youtube.com/watch?v=WLSxFhWPIRs) |
+| 문의               | [YouTube에서 보기](https://www.youtube.com/watch?v=eWmBrzBqTeU) |
+| 후기               | [YouTube에서 보기](https://www.youtube.com/watch?v=vFFOV-ELUPY) |
+| 신고               | [YouTube에서 보기](https://www.youtube.com/watch?v=BbsZr3dRHZ0) |
+| 광고               | [YouTube에서 보기](https://www.youtube.com/watch?v=iv0MOgaqSUI) |

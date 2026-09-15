@@ -28,7 +28,7 @@ public class ReviewController {
 		Map<String, Object> response = new HashMap<>();
 		response.put( "success" ,   reviewservice.insertUserReview(dto) == 1 );
 		return response;
-	}  // http://localhost:8080/moit/meetup/user/detail.do?meetupId=22
+	}
 	
 	//내 해당모임의 후기
 	// 특정모임의 후기목록 조회
@@ -46,7 +46,7 @@ public class ReviewController {
 //		reviewservice.insertUserReview(dto);
 //		rttr.addAttribute("meetupId", dto.getMeetupId());
 //		return "redirect:/meetup/user/detail.do?meetupId=" + dto.getMeetupId();
-//	}  // http://localhost:8080/moit/meetup/user/detail.do?meetupId=22
+//	}
 //	
 	// 특정모임의 후기목록 조회
 	@RequestMapping(value="/review/test", method=RequestMethod.GET)

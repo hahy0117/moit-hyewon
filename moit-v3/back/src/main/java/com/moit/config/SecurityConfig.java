@@ -270,6 +270,7 @@ public class SecurityConfig {
                     request.getRequestURI().startsWith("/api/")
             )
         );
+       
 
         return http.build();
     }
@@ -285,7 +286,10 @@ public class SecurityConfig {
 
         // Next.js
         configuration.setAllowedOrigins(
-            List.of("http://localhost:3000")
+            List.of("http://localhost:3000",
+            		"http://localhost:3001",
+                    "https://moit3.duckdns.org"
+            )
         );
 
         // 허용 HTTP Method

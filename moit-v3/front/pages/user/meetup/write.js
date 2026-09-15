@@ -40,6 +40,8 @@ const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 function write() {
+    const API_BASE_URL =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
     const dispatch = useDispatch();
     const router = useRouter();
     const { meetupId } = router.query;
@@ -83,7 +85,7 @@ function write() {
         if (!isEdit || !meetup) {
             return;
         }
-        //console.log("🔥 수정할 meetup:", meetup);
+
         // 기존 이미지
         if (meetup.imagePaths?.length > 0) {
             const existingImages = meetup.imagePaths.map(
@@ -91,7 +93,7 @@ function write() {
                     uid: `existing-${index}`,
                     name: imagePath,
                     status: "done",
-                    url: `http://localhost:8080/upload/meetup/${imagePath}`,
+                    url: `${API_BASE_URL}/upload/meetup/${imagePath}`,
                 }),
             );
 
@@ -162,7 +164,7 @@ function write() {
             // 혹시 입력 중이라면 최신값으로 요청
             aiRequestedRef.current = true;
 
-            console.log("🤖 AI 요청:", currentTitle);
+            //console.log("🤖 AI 요청:", currentTitle);
 
             dispatch(
                 recommendMeetupRequest({
@@ -178,7 +180,7 @@ function write() {
     useEffect(() => {
         if (!aiRecommendation) return;
 
-        console.log("🤖 AI 추천 결과:", aiRecommendation);
+        //console.log("🤖 AI 추천 결과:", aiRecommendation);
 
         form.setFieldsValue({
             title: aiRecommendation.title,
@@ -229,7 +231,7 @@ function write() {
             return next;
         });
     };
-    
+
     useEffect(() => {
         if (!router.isReady) return;
 

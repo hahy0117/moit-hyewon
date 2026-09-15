@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
@@ -464,7 +465,7 @@ function pointHistory() {
                   width="100%"
                   height="100%"
                 >
-                  <BarChart
+                <BarChart
                     data={chartData}
                     margin={{
                       top: 20,

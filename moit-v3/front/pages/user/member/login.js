@@ -3,25 +3,32 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
 
 import {
-    Form,Input,Button,
-    Card,Radio,Checkbox,
-    Typography,message,Divider,
-    Space
+    Form,
+    Input,
+    Button,
+    Card,
+    Radio,
+    Checkbox,
+    Typography,
+    message,
+    Divider,
+    Space,
 } from "antd";
 
-import {LockOutlined,UserOutlined} from "@ant-design/icons";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
 
-import {loginRequest} from "../../../reducers/userReducer";
+import { loginRequest } from "../../../reducers/userReducer";
 
 const { Title, Text } = Typography;
 
-
-function Login(){
-
+function Login() {
     const dispatch = useDispatch();
     const router = useRouter();
 
     const [form] = Form.useForm();
+
+    const API_BASE_URL =
+        process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
 
     const getDeviceId = () => {
         let deviceId = localStorage.getItem("deviceId");
@@ -35,28 +42,23 @@ function Login(){
     };
 
     //user 정보 있으면 main page 이동
-    const { user, isInitialized}  = useSelector((state) => state.user);
+    const { user, isInitialized } = useSelector((state) => state.user);
 
     useEffect(() => {
+        if (!isInitialized) return;
 
-      if(!isInitialized) return;
-
-      if (user) {
-        router.replace("/");
-        return;
-      }
-
+        if (user) {
+            router.replace("/");
+            return;
+        }
     }, [user, isInitialized, router]);
 
     // =========================
     // Redux 상태
     // =========================
-    const {
-        loading,
-        error,
-        success,
-    } = useSelector((state) => state.user.login);
-
+    const { loading, error, success } = useSelector(
+        (state) => state.user.login,
+    );
 
     // =========================
     // 로그인 탭
@@ -85,9 +87,10 @@ function Login(){
     // =========================
 
     useEffect(() => {
-        if(error){ message.error(error);}
+        if (error) {
+            message.error(error);
+        }
     }, [error]);
-
 
     // =========================
     // 페이지 진입 시
@@ -95,28 +98,29 @@ function Login(){
     // =========================
 
     useEffect(() => {
+        if (typeof window === "undefined") {
+            return;
+        }
 
-        if(typeof window === "undefined"){ return;}
+        const savedLoginId = localStorage.getItem("savedLoginId");
 
-        const savedLoginId =localStorage.getItem("savedLoginId");
-
-        if(savedLoginId){ form.setFieldsValue({loginId: savedLoginId});
+        if (savedLoginId) {
+            form.setFieldsValue({ loginId: savedLoginId });
             setRememberId(true);
         }
     }, [form]);
 
-
     // =========================
     // 로그인 탭 변경
     // =========================
-    const handleTabChange = (type) => {setLoginTab(type);};
-
+    const handleTabChange = (type) => {
+        setLoginTab(type);
+    };
 
     // =========================
     // 로그인
     // =========================
     const handleLogin = (values) => {
-
         const loginId = values.loginId.trim();
         const password = values.password;
 
@@ -125,10 +129,10 @@ function Login(){
         // =========================
         let memberTypeId;
 
-        if(loginTab === "admin"){
+        if (loginTab === "admin") {
             // 관리자
             memberTypeId = null;
-        }else{
+        } else {
             // 일반회원 / 제휴업체
             memberTypeId = Number(values.memberTypeId);
         }
@@ -136,13 +140,12 @@ function Login(){
         // =========================
         // 아이디 저장
         // =========================
-        if(typeof window !== "undefined"){
-            if(rememberId){
-                localStorage.setItem(
-                    "savedLoginId",
-                    loginId
-                );
-            }else{localStorage.removeItem("savedLoginId");}
+        if (typeof window !== "undefined") {
+            if (rememberId) {
+                localStorage.setItem("savedLoginId", loginId);
+            } else {
+                localStorage.removeItem("savedLoginId");
+            }
         }
 
         // =========================
@@ -159,7 +162,6 @@ function Login(){
         // =========================
         dispatch(loginRequest(loginData));
     };
-
 
     // =========================
     // 아이디 찾기
@@ -183,10 +185,8 @@ function Login(){
 
         localStorage.setItem("socialProvider", "KAKAO");
 
-        window.location.href =
-            `http://localhost:8080/oauth2/authorization/kakao?deviceId=${encodeURIComponent(deviceId)}`;
+        window.location.href = `${API_BASE_URL}/oauth2/authorization/kakao?deviceId=${encodeURIComponent(deviceId)}`;
     };
-
 
     // =========================
     // 네이버 로그인
@@ -196,10 +196,8 @@ function Login(){
 
         localStorage.setItem("socialProvider", "NAVER");
 
-        window.location.href =
-            `http://localhost:8080/oauth2/authorization/naver?deviceId=${encodeURIComponent(deviceId)}`;
+        window.location.href = `${API_BASE_URL}/oauth2/authorization/naver?deviceId=${encodeURIComponent(deviceId)}`;
     };
-
 
     // =========================
     // 구글 로그인
@@ -209,9 +207,8 @@ function Login(){
 
         localStorage.setItem("socialProvider", "GOOGLE");
 
-        window.location.href =
-            `http://localhost:8080/oauth2/authorization/google?deviceId=${encodeURIComponent(deviceId)}`;
-    }; 
+        window.location.href = `${API_BASE_URL}/oauth2/authorization/google?deviceId=${encodeURIComponent(deviceId)}`;
+    };
 
     ///////////////////////////////
     return (
@@ -228,7 +225,6 @@ function Login(){
                     boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
                 }}
             >
-
                 {/* 제목 */}
                 <div
                     style={{
@@ -236,17 +232,10 @@ function Login(){
                         marginBottom: "30px",
                     }}
                 >
+                    <Title level={2}>MOIT 로그인</Title>
 
-                    <Title level={2}>
-                        MOIT 로그인
-                    </Title>
-
-                    <Text type="secondary">
-                        새로운 모임을 시작해보세요.
-                    </Text>
-
+                    <Text type="secondary">새로운 모임을 시작해보세요.</Text>
                 </div>
-
 
                 {/* 로그인 유형 */}
                 <div
@@ -258,21 +247,13 @@ function Login(){
                 >
                     <Button
                         type="text"
-                        onClick={() =>
-                            handleTabChange("member")
-                        }
+                        onClick={() => handleTabChange("member")}
                         style={{
                             flex: 1,
                             height: "45px",
                             borderRadius: 0,
-                            color:
-                                loginTab === "member"
-                                    ? "#6678f5"
-                                    : "#999",
-                            fontWeight:
-                                loginTab === "member"
-                                    ? 600
-                                    : 400,
+                            color: loginTab === "member" ? "#6678f5" : "#999",
+                            fontWeight: loginTab === "member" ? 600 : 400,
                             borderBottom:
                                 loginTab === "member"
                                     ? "2px solid #6678f5"
@@ -284,21 +265,13 @@ function Login(){
 
                     <Button
                         type="text"
-                        onClick={() =>
-                            handleTabChange("admin")
-                        }
+                        onClick={() => handleTabChange("admin")}
                         style={{
                             flex: 1,
                             height: "45px",
                             borderRadius: 0,
-                            color:
-                                loginTab === "admin"
-                                    ? "#6678f5"
-                                    : "#999",
-                            fontWeight:
-                                loginTab === "admin"
-                                    ? 600
-                                    : 400,
+                            color: loginTab === "admin" ? "#6678f5" : "#999",
+                            fontWeight: loginTab === "admin" ? 600 : 400,
                             borderBottom:
                                 loginTab === "admin"
                                     ? "2px solid #6678f5"
@@ -307,7 +280,6 @@ function Login(){
                     >
                         관리자 로그인
                     </Button>
-
                 </div>
 
                 {/* 로그인 Form */}
@@ -319,7 +291,6 @@ function Login(){
                         memberTypeId: 1,
                     }}
                 >
-
                     {/* 일반회원 / 제휴업체*/}
                     {loginTab === "member" && (
                         <Form.Item
@@ -329,13 +300,9 @@ function Login(){
                             }}
                         >
                             <Radio.Group>
-                                <Radio value={1}>
-                                    일반회원
-                                </Radio>
+                                <Radio value={1}>일반회원</Radio>
 
-                                <Radio value={2}>
-                                    제휴업체
-                                </Radio>
+                                <Radio value={2}>제휴업체</Radio>
                             </Radio.Group>
                         </Form.Item>
                     )}
@@ -361,15 +328,12 @@ function Login(){
                         rules={[
                             {
                                 required: true,
-                                message:
-                                    "아이디를 입력해주세요.",
+                                message: "아이디를 입력해주세요.",
                             },
                         ]}
                     >
                         <Input
-                            prefix={
-                                <UserOutlined />
-                            }
+                            prefix={<UserOutlined />}
                             placeholder="아이디"
                             size="large"
                         />
@@ -382,15 +346,12 @@ function Login(){
                         rules={[
                             {
                                 required: true,
-                                message:
-                                    "비밀번호를 입력해주세요.",
+                                message: "비밀번호를 입력해주세요.",
                             },
                         ]}
                     >
                         <Input.Password
-                            prefix={
-                                <LockOutlined />
-                            }
+                            prefix={<LockOutlined />}
                             placeholder="비밀번호"
                             size="large"
                         />
@@ -405,11 +366,7 @@ function Login(){
                     >
                         <Checkbox
                             checked={rememberId}
-                            onChange={(e) =>
-                                setRememberId(
-                                    e.target.checked
-                                )
-                            }
+                            onChange={(e) => setRememberId(e.target.checked)}
                         >
                             아이디 저장
                         </Checkbox>
@@ -502,17 +459,11 @@ function Login(){
                             marginTop: "20px",
                         }}
                     >
-                        <Button
-                            type="link"
-                            size="small"
-                            onClick={handleFindId}
-                        >
+                        <Button type="link" size="small" onClick={handleFindId}>
                             아이디 찾기
                         </Button>
 
-                        <Text type="secondary">
-                            |
-                        </Text>
+                        <Text type="secondary">|</Text>
 
                         <Button
                             type="link"
@@ -524,13 +475,13 @@ function Login(){
                     </div>
 
                     {/* 회원가입 */}
-                    <div 
-                        style={{ 
-                            textAlign: "center", 
-                            marginTop: "10px", 
-                            paddingTop: "15px", 
-                            borderTop: "1px solid #f0f0f0", 
-                        }} 
+                    <div
+                        style={{
+                            textAlign: "center",
+                            marginTop: "10px",
+                            paddingTop: "15px",
+                            borderTop: "1px solid #f0f0f0",
+                        }}
                     >
                         <Text type="secondary">
                             {loginTab === "admin"
@@ -538,8 +489,8 @@ function Login(){
                                 : "계정이 없으신가요?"}
                         </Text>
 
-                        <Button 
-                            type="link" 
+                        <Button
+                            type="link"
                             onClick={() => {
                                 if (loginTab === "admin") {
                                     router.push("/user/member/admin-signup");
@@ -556,7 +507,6 @@ function Login(){
 
                     {/* 로그인 에러 */}
                     {error && (
-
                         <div
                             style={{
                                 marginTop: "15px",

@@ -46,8 +46,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
-// http://localhost:8080/swagger-ui/index.html - Swagger test주손
-
 @Tag(name = "Meetup Api", description = "게시글 관련 API")
 @RestController
 @RequiredArgsConstructor

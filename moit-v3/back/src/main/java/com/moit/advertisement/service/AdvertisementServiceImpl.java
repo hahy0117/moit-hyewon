@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -19,6 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -96,8 +100,9 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     private final MailService mailService;
     private final AdvertisementAiSummaryRepository aiSummaryRepository;
-
-    private static final String UPLOAD_PATH = "C:/upload/ad";
+    
+    @Value("${resource.path}")
+    private String resourcePath;
 
     // =========================================================
     // 관리자 탭별 전용 구현 메서드
@@ -743,128 +748,117 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 	         advertisementImageRepository.flush();
 	     }
 	
-	
-	     // =========================================================
-	     // 새 이미지 등록 / 기존 이미지 교체
-	     // =========================================================
-	     if (imageFiles != null
-	             && !imageFiles.isEmpty()) {
-	
-	         if (imageTypes == null
-	                 || imageFiles.size() != imageTypes.size()) {
-	
-	             throw new IllegalArgumentException(
-	                     "이미지 정보가 올바르지 않습니다."
-	             );
-	         }
-	
-	         File directory = new File(UPLOAD_PATH);
-	
-	         if (!directory.exists()
-	                 && !directory.mkdirs()) {
-	
-	             throw new IllegalStateException(
-	                     "이미지 저장 폴더를 생성할 수 없습니다."
-	             );
-	         }
-	
-	         for (int i = 0; i < imageFiles.size(); i++) {
-	
-	             MultipartFile file = imageFiles.get(i);
-	
-	             if (file == null || file.isEmpty()) {
-	                 continue;
-	             }
-	
-	             String imageTypeName = imageTypes.get(i);
-	
-	             if (imageTypeName == null
-	                     || imageTypeName.isBlank()) {
-	                 continue;
-	             }
-	
-	             AdPosition targetPosition;
-	
-	             try {
-	                 targetPosition =
-	                         AdPosition.valueOf(
-	                                 imageTypeName.toUpperCase()
-	                         );
-	             } catch (IllegalArgumentException e) {
-	                 throw new IllegalArgumentException(
-	                         "잘못된 광고 이미지 위치입니다: "
-	                         + imageTypeName
-	                 );
-	             }
-	
+
+	  // =========================================================
+	  // 새 이미지 등록 / 기존 이미지 교체
+	  // =========================================================
+	  if (imageFiles != null && !imageFiles.isEmpty()) {
+
+	      if (imageTypes == null
+	              || imageFiles.size() != imageTypes.size()) {
+	          throw new IllegalArgumentException(
+	                  "이미지 정보가 올바르지 않습니다."
+	          );
+	      }
+
+	      Path uploadPath = Paths.get(resourcePath, "ad");
+	      File directory = uploadPath.toFile();
+
+	      if (!directory.exists() && !directory.mkdirs()) {
+	          throw new IllegalStateException(
+	                  "이미지 저장 폴더를 생성할 수 없습니다."
+	          );
+	      }
+
+	      for (int i = 0; i < imageFiles.size(); i++) {
+
+	          MultipartFile file = imageFiles.get(i);
+
+	          if (file == null || file.isEmpty()) {
+	              continue;
+	          }
+
+	          String imageTypeName = imageTypes.get(i);
+
+	          if (imageTypeName == null || imageTypeName.isBlank()) {
+	              continue;
+	          }
+
+	          AdPosition targetPosition;
+
+	          try {
+	              targetPosition = AdPosition.valueOf(
+	                      imageTypeName.toUpperCase()
+	              );
+	          } catch (IllegalArgumentException e) {
+	              throw new IllegalArgumentException(
+	                      "잘못된 광고 이미지 위치입니다: "
+	                      + imageTypeName
+	              );
+	          }
+
+	          // 기존 이미지 확인 및 삭제
+	          AdvertisementImage oldImage =
+	                  advertisementImageRepository
+	                          .findByAdvertisement_AdIdAndImageType(
+	                                  adId,
+	                                  targetPosition
+	                          )
+	                          .orElse(null);
+
+	          String oldImageUrl = null;
+
+	          if (oldImage != null) {
+	              oldImageUrl = oldImage.getImageUrl();
+
+	              advertisementImageRepository.delete(oldImage);
+
+	              // 기존 이미지 삭제를 DB에 먼저 반영
+	              advertisementImageRepository.flush();
+	          }
+
 	          // 새 파일 저장
-	             String originalFilename = file.getOriginalFilename();
+	          String originalFilename = file.getOriginalFilename();
+	          String extension = "";
 
-	             String extension = "";
+	          if (originalFilename != null
+	                  && originalFilename.contains(".")) {
+	              extension = originalFilename.substring(
+	                      originalFilename.lastIndexOf(".")
+	              );
+	          }
 
-	             if (originalFilename != null
-	                     && originalFilename.contains(".")) {
+	          String saveName = UUID.randomUUID() + extension;
+	          File savedFile = new File(directory, saveName);
 
-	                 extension = originalFilename.substring(
-	                         originalFilename.lastIndexOf(".")
-	                 );
-	             }
+	          try {
+	              file.transferTo(savedFile);
+	          } catch (IOException e) {
+	              throw new RuntimeException(
+	                      "광고 이미지 저장 실패",
+	                      e
+	              );
+	          }
 
-	             String saveName = UUID.randomUUID() + extension;
+	          // 새 이미지 DB 등록
+	          AdvertisementImage newImage =
+	                  AdvertisementImage.builder()
+	                          .advertisement(advertisement)
+	                          .imageType(targetPosition)
+	                          .imageUrl("/upload/ad/" + saveName)
+	                          .build();
 
-	             File savedFile = new File(directory, saveName);
+	          advertisementImageRepository.save(newImage);
+	          advertisementImageRepository.flush();
 
-	             try {
+	          // 새 이미지 등록 후 기존 파일 삭제
+	          if (oldImageUrl != null) {
+	              deleteImageFile(oldImageUrl);
+	          }
+	      }
+	  }
+   }
 
-	                 file.transferTo(savedFile);
-
-	             } catch (IOException e) {
-
-	                 throw new RuntimeException(
-	                         "광고 이미지 저장 실패",
-	                         e
-	                 );
-	             }
-	
-	             // 기존파일 확인
-	             AdvertisementImage oldImage =
-	            	        advertisementImageRepository
-	            	                .findByAdvertisement_AdIdAndImageType(
-	            	                        adId,
-	            	                        targetPosition
-	            	                )
-	            	                .orElse(null);
-
-	            	String oldImageUrl = null;
-
-	            	if (oldImage != null) {
-
-	            	    oldImageUrl = oldImage.getImageUrl();
-
-	            	    advertisementImageRepository.delete(oldImage);
-	            	}
-	            	
-	             // -----------------------------------------
-	             // DB 이미지 등록
-	             // -----------------------------------------
-	             AdvertisementImage newImage =
-	                     AdvertisementImage.builder()
-	                             .advertisement(advertisement)
-	                             .imageType(targetPosition)
-	                             .imageUrl( "/upload/ad/" + saveName )
-	                             .build();
-	
-	             advertisementImageRepository.save( newImage );
-	             
-	             advertisementImageRepository.flush();
-
-		          // DB 교체가 끝난 후 기존 파일 삭제
-		          if (oldImageUrl != null) {
-		              deleteImageFile(oldImageUrl);
-		          }
-	         }
-	     }
-    }
 
     private void deleteImageFile(String imageUrl) {
 
@@ -874,10 +868,17 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
         String fileName = new File(imageUrl).getName();
 
-        File file = new File(UPLOAD_PATH, fileName);
-
-        if (file.exists()) {
-            file.delete();
+        Path uploadPath = Paths.get(resourcePath, "ad");
+        Path filePath = uploadPath.resolve(fileName);
+        
+        if (Files.exists(filePath)) {
+            try {
+                Files.delete(filePath);
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "광고 이미지 삭제에 실패했습니다.", e
+                );
+            }
         }
     }
 
@@ -2761,13 +2762,15 @@ public class AdvertisementServiceImpl implements AdvertisementService {
 
     private void deletePhysicalFiles(
             List<AdvertisementImage> images) {
+    	
+    	Path uploadPath = Paths.get(resourcePath, "ad");
 
         for (AdvertisementImage image : images) {
 
             String imageUrl =
                     image.getImageUrl();
 
-            if (imageUrl == null) {
+            if (imageUrl == null || imageUrl.isBlank()) {
                 continue;
             }
 
@@ -2776,15 +2779,18 @@ public class AdvertisementServiceImpl implements AdvertisementService {
                             "/upload/ad/",
                             ""
                     );
-
-            File file =
-                    new File(
-                            UPLOAD_PATH,
-                            fileName
-                    );
-
-            if (file.exists()) {
-                file.delete();
+            
+            Path filePath = uploadPath.resolve(fileName);
+            
+            try {
+                if (Files.exists(filePath)) {
+                    Files.delete(filePath);
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException(
+                        "광고 이미지 삭제에 실패했습니다.",
+                        e
+                );
             }
         }
     }

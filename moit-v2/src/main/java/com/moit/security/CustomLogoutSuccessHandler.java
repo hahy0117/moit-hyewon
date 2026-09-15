@@ -12,7 +12,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
-
+    @Value("${app.oauth2.kakao-client-id}")
+    private String kakaoClientId;
+    
     @Override
     public void onLogoutSuccess(HttpServletRequest request,
                                 HttpServletResponse response,
@@ -28,8 +30,8 @@ public class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
 
                 String logoutUrl =
                     "https://kauth.kakao.com/oauth/logout"
-                    + "?client_id=d1065db6fa6b99aa2d26a3d28c80143a"
-                    + "&logout_redirect_uri=http://localhost:8080/user/member/kakaologout";
+                    + "?client_id=" + kakaoClientId
+                    + "&logout_redirect_uri=https://moit-web-v3.duckdns.org/user/member/kakaologout";
 
                 response.sendRedirect(logoutUrl);
                 return;

@@ -25,9 +25,7 @@ public class PhoneVerificationController {
 	public ResponseEntity<String> sendCode(
 			@Valid @RequestBody PhoneVerificationRequestDto request
 			){
-		
 		phoneVerificationService.sendVerificationCode(request.getMobile());
-		
 		return ResponseEntity.ok("인증번호가 발송되었습니다.");		
 	}
 	
@@ -36,13 +34,10 @@ public class PhoneVerificationController {
 	public ResponseEntity<String> verifyCode(
 			@Valid @RequestBody PhoneVerificationConfirmDto request
 			){
-		
 		boolean verified = phoneVerificationService.verifyCode(request.getMobile(), request.getCode());
-		
 		if(!verified) {
 			return ResponseEntity.badRequest().body("인증번호가 일치하지 않거나 만료되었습니다.");
 		}
-		
 		return ResponseEntity.ok("휴대폰 인증이 완료되었습니다.");
 	}
 	

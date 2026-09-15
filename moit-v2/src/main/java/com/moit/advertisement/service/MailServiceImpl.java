@@ -68,7 +68,7 @@ public class MailServiceImpl implements MailService {
 
                         <div style="margin:35px 0;text-align:center;">
 
-                            <a href="http://localhost:8080/user/advertisement/list"
+                            <a href="https://moit-web-v3.duckdns.org/user/advertisement/list"
                                style="
                                     display:inline-block;
                                     padding:14px 28px;
