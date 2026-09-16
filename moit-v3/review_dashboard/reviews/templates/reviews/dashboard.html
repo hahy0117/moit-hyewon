@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MOIT Review Analytics</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                "Noto Sans KR",
+                Arial,
+                sans-serif;
+
+            background: #f7f8fa;
+            color: #1f2937;
+        }
+
+        /* 전체 레이아웃 */
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 사이드바 */
+
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: #111827;
+            color: white;
+            padding: 28px 18px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        .logo {
+            padding: 0 14px 35px;
+        }
+
+        .logo-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .logo-subtitle {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .menu-title {
+            padding: 0 14px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .menu-item {
+            padding: 13px 14px;
+            border-radius: 9px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .menu-item.active {
+            background: #1f2937;
+            color: white;
+            font-weight: 600;
+        }
+
+        .menu-item span {
+            margin-right: 10px;
+        }
+
+        /* 메인 */
+
+        .main {
+            margin-left: 240px;
+            width: calc(100% - 240px);
+            padding: 40px;
+        }
+
+        /* 상단 */
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 750;
+            letter-spacing: -1px;
+        }
+
+        .page-description {
+            margin: 8px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 9px 14px;
+            font-size: 12px;
+            color: #4b5563;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+
+        /* 통계 카드 */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 23px;
+        }
+
+        .stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+        }
+
+        .stat-number {
+            margin-top: 17px;
+            font-size: 30px;
+            font-weight: 750;
+            letter-spacing: -1px;
+        }
+
+        .stat-description {
+            margin-top: 7px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* 차트 영역 */
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 18px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 25px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 22px;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .panel-description {
+            margin: 5px 0 0;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .chart-container {
+            height: 330px;
+        }
+
+        /* 공개 상태 */
+
+        .public-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doughnut-container {
+            height: 220px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .public-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .summary-box {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .summary-number {
+            margin-top: 5px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        /* 분석 요약 */
+
+        .insight {
+            margin-top: 18px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 25px;
+        }
+
+        .insight-title {
+            margin: 0 0 18px;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .insight-item {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .insight-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .insight-value {
+            margin-top: 8px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .insight-text {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* 오류 */
+
+        .error {
+            background: white;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        /* 반응형 */
+
+        @media (max-width: 1100px) {
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .insight-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            .sidebar {
+                width: 70px;
+                padding: 20px 10px;
+            }
+
+            .logo-title {
+                font-size: 0;
+            }
+
+            .logo-title::after {
+                content: "M";
+                font-size: 24px;
+            }
+
+            .logo-subtitle,
+            .menu-title,
+            .menu-item-text {
+                display: none;
+            }
+
+            .menu-item {
+                text-align: center;
+                padding: 13px 5px;
+            }
+
+            .main {
+                margin-left: 70px;
+                width: calc(100% - 70px);
+                padding: 25px 18px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .top {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- 사이드바 -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+
+            <div class="logo-title">
+                MOIT
+            </div>
+
+            <div class="logo-subtitle">
+                Review Analytics
+            </div>
+
+        </div>
+
+        <div class="menu-title">
+            ANALYTICS
+        </div>
+
+        <div class="menu">
+
+            <div class="menu-item active">
+                <span>▦</span>
+                <span class="menu-item-text">Dashboard</span>
+            </div>
+
+            <div class="menu-item">
+                <span>▤</span>
+                <span class="menu-item-text">Reviews</span>
+            </div>
+
+            <div class="menu-item">
+                <span>◉</span>
+                <span class="menu-item-text">Statistics</span>
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- 메인 -->
+
+    <main class="main">
+
+        <div class="top">
+
+            <div>
+
+                <h1 class="page-title">
+                    Review Analytics
+                </h1>
+
+                <p class="page-description">
+                    MOIT 후기 데이터를 기반으로 서비스 이용 현황을 분석합니다.
+                </p>
+
+            </div>
+
+            <div class="status">
+
+                <span class="status-dot"></span>
+
+                Spring Boot API Connected
+
+            </div>
+
+        </div>
+
+
+        {% if error %}
+
+            <div class="error">
+
+                Spring Boot API 연결에 실패했습니다.
+
+                <br>
+
+                {{ error }}
+
+            </div>
+
+        {% else %}
+
+
+        <!-- 통계 카드 -->
+
+        <section class="stats">
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div class="stat-label">
+                        총 후기
+                    </div>
+
+                    <div class="stat-icon">
+                        📝
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    {{ data.totalReviews }}
+                </div>
+
+                <div class="stat-description">
+                    전체 등록 후기
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div class="stat-label">
+                        평균 평점
+                    </div>
+
+                    <div class="stat-icon">
+                        ★
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    {{ data.averageRating }}
+                </div>
+
+                <div class="stat-description">
+                    전체 후기 평균
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div class="stat-label">
+                        총 좋아요
+                    </div>
+
+                    <div class="stat-icon">
+                        ♡
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    {{ data.totalLikes }}
+                </div>
+
+                <div class="stat-description">
+                    후기 좋아요 누적
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <div class="stat-label">
+                        총 조회수
+                    </div>
+
+                    <div class="stat-icon">
+                        ◉
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    {{ data.totalViews }}
+                </div>
+
+                <div class="stat-description">
+                    후기 조회 누적
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- 차트 -->
+
+        <section class="dashboard-grid">
+
+
+            <!-- 평점 분포 -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2 class="panel-title">
+                            평점 분포
+                        </h2>
+
+                        <p class="panel-description">
+                            별점별 후기 등록 현황
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <canvas id="ratingChart"></canvas>
+
+                </div>
+
+            </div>
+
+
+            <!-- 공개 상태 -->
+
+            <div class="panel public-panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2 class="panel-title">
+                            후기 공개 상태
+                        </h2>
+
+                        <p class="panel-description">
+                            공개 및 비공개 후기 비율
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="doughnut-container">
+
+                    <canvas id="publicChart"></canvas>
+
+                </div>
+
+
+                <div class="public-summary">
+
+                    <div class="summary-box">
+
+                        <div class="summary-label">
+                            공개 후기
+                        </div>
+
+                        <div class="summary-number">
+                            {{ data.publicReviews }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="summary-box">
+
+                        <div class="summary-label">
+                            비공개 후기
+                        </div>
+
+                        <div class="summary-number">
+                            {{ data.privateReviews }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- 분석 요약 -->
+
+        <section class="insight">
+
+            <h2 class="insight-title">
+                후기 데이터 요약
+            </h2>
+
+            <div class="insight-grid">
+
+                <div class="insight-item">
+
+                    <div class="insight-label">
+                        가장 많은 평점
+                    </div>
+
+                    <div class="insight-value" id="highestRating">
+                        -
+                    </div>
+
+                    <div class="insight-text">
+                        가장 많이 등록된 별점
+                    </div>
+
+                </div>
+
+
+                <div class="insight-item">
+
+                    <div class="insight-label">
+                        공개 후기 비율
+                    </div>
+
+                    <div class="insight-value" id="publicRatio">
+                        -
+                    </div>
+
+                    <div class="insight-text">
+                        전체 후기 중 공개 비율
+                    </div>
+
+                </div>
+
+
+                <div class="insight-item">
+
+                    <div class="insight-label">
+                        후기당 평균 조회
+                    </div>
+
+                    <div class="insight-value" id="averageViews">
+                        -
+                    </div>
+
+                    <div class="insight-text">
+                        전체 조회수 ÷ 후기 수
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+
+{% if data %}
+
+<script>
+
+    const ratingCounts = [
+        {{ data.ratingDistribution.1 }},
+        {{ data.ratingDistribution.2 }},
+        {{ data.ratingDistribution.3 }},
+        {{ data.ratingDistribution.4 }},
+        {{ data.ratingDistribution.5 }}
+    ];
+
+
+    /* 평점 분포 */
+
+    const ratingChart = new Chart(
+        document.getElementById("ratingChart"),
+        {
+            type: "bar",
+
+            data: {
+
+                labels: [
+                    "1점",
+                    "2점",
+                    "3점",
+                    "4점",
+                    "5점"
+                ],
+
+                datasets: [
+                    {
+                        label: "후기 수",
+
+                        data: ratingCounts,
+
+                        borderRadius: 7,
+
+                        borderWidth: 0
+                    }
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        ticks: {
+                            stepSize: 1
+                        },
+
+                        grid: {
+                            color: "#f1f2f4"
+                        }
+                    },
+
+                    x: {
+
+                        grid: {
+                            display: false
+                        }
+                    }
+
+                },
+
+                plugins: {
+
+                    legend: {
+                        display: false
+                    }
+
+                }
+
+            }
+        }
+    );
+
+
+    /* 공개 / 비공개 */
+
+    const publicChart = new Chart(
+        document.getElementById("publicChart"),
+        {
+            type: "doughnut",
+
+            data: {
+
+                labels: [
+                    "공개 후기",
+                    "비공개 후기"
+                ],
+
+                datasets: [
+                    {
+                        data: [
+                            {{ data.publicReviews }},
+                            {{ data.privateReviews }}
+                        ],
+
+                        borderWidth: 0
+                    }
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                cutout: "70%",
+
+                plugins: {
+
+                    legend: {
+                        position: "bottom"
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+    /* 가장 많은 평점 */
+
+    const maxCount = Math.max(...ratingCounts);
+
+    const maxRatingIndex = ratingCounts.indexOf(maxCount);
+
+    document.getElementById("highestRating").textContent =
+        (maxRatingIndex + 1) + "점";
+
+
+    /* 공개 후기 비율 */
+
+    const totalReviews = {{ data.totalReviews }};
+
+    const publicReviews = {{ data.publicReviews }};
+
+    const publicRatio =
+        totalReviews > 0
+            ? Math.round((publicReviews / totalReviews) * 100)
+            : 0;
+
+    document.getElementById("publicRatio").textContent =
+        publicRatio + "%";
+
+
+    /* 후기당 평균 조회 */
+
+    const totalViews = {{ data.totalViews }};
+
+    const averageViews =
+        totalReviews > 0
+            ? (totalViews / totalReviews).toFixed(1)
+            : 0;
+
+    document.getElementById("averageViews").textContent =
+        averageViews;
+
+</script>
+
+{% endif %}
+
+</body>
+</html>

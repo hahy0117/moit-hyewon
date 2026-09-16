@@ -75,4 +75,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     );
 
     boolean existsByMeetup_IdAndMember_IdAndDeleteYn(Long meetupId, Long memberId, Character deleteYn);
+    
+    //통계용 삭제되지 않은 후기 가져오기
+    List<Review> findByDeleteYn(Character deleteYn);
 }
